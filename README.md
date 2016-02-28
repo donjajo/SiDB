@@ -47,4 +47,9 @@ print_r( Db::getResults( "SELECT * FROM `table`" ) );
 print_r( Db::getRow( "SELECT * FROM `table`" ) );
 ```
 
+### Executing Query
+```php 
+Db::query( "DROP DATABASE `TEST` );
+```
+
 
