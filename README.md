@@ -14,3 +14,7 @@ self::$db_data = array(
 	'name' => ''
 	);
  ```
+ ###Inserting Data
+ Using the insert() method which accepts 2 arguments, 
+ 	* The table name
+    * Array of values and column names as keys
