@@ -15,6 +15,26 @@ self::$db_data = array(
 	);
  ```
  ###Inserting Data
- Using the insert() method which accepts 2 arguments, 
- 	* The table name
-    * Array of values and column names as keys
+ Using the `insert()` method which accepts 2 arguments and returns the last insert ID
+- Table name
+- Arrays of values to insert with column name as keys
+```php
+Db::insert( 'table', array( 'column1' => 'value1', 'column2' => 'value2' ) );
+```
+
+### Updating Data
+```php
+Db::update( 'table', array( 'column1' => 'new_value', 'column2' => 'new_value' ), array( 'column3' => 'value' ) );
+```
+This accepts 3 arguments:
+- Table name
+- Array of columns to modify
+- Array of columns to match
+
+### Deleting Data
+```php
+Db::delete( 'table', array( 'column' => 'value' ) );
+```
+This deletes from table where `column` = `value`
+
+
