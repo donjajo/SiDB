@@ -282,5 +282,3 @@ class Db {
 		}
 	}
 }
-
-print_r( Db::getRow( "SELECT * FROM `testing`" ) );
