@@ -1,9 +1,9 @@
-# php_DB
+# SiDB
 Simple PHP MySQL Database Framework
 
-**SyDB** is a Simple PHP MySQL Database framework with ease of use
+**SiDB** is a Simple PHP MySQL Database framework with ease of use
 
-## Using SyDB
+## Using SiDB
 Include **db.Class.php** to your project and set database details in $db_data object in line 10 to 15
 ```php
 // Load database data
@@ -64,5 +64,3 @@ For some reasons you need the PDO instance use:
 ```php
 Db::$connect;
 ```
-
-
