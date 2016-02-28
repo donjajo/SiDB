@@ -49,7 +49,20 @@ print_r( Db::getRow( "SELECT * FROM `table`" ) );
 
 ### Executing Query
 ```php 
-Db::query( "DROP DATABASE `TEST` );
+Db::query( "DROP DATABASE `test` );
+```
+
+### Others
+#### Number of Rows
+```php
+Db::$num_rows;
+```
+This returns valid data after using the getResults and getRow method
+
+#### PDO Instance
+For some reasons you need the PDO instance use:
+```php
+Db::$connect;
 ```
 
 
