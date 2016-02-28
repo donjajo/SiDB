@@ -49,7 +49,7 @@ print_r( Db::getRow( "SELECT * FROM `table`" ) );
 
 ### Executing Query
 ```php 
-Db::query( "DROP DATABASE `test` );
+Db::query( "DROP DATABASE `test`" );
 ```
 
 ### Others
