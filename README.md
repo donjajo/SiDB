@@ -14,7 +14,7 @@ self::$db_data = array(
 	'name' => ''
 	);
  ```
- ###Inserting Data
+ ### Inserting Data
  Using the `insert()` method which accepts 2 arguments and returns the last insert ID
 - Table name
 - Arrays of values to insert with column name as keys
@@ -36,5 +36,15 @@ This accepts 3 arguments:
 Db::delete( 'table', array( 'column' => 'value' ) );
 ```
 This deletes from table where `column` = `value`
+
+### Getting data
+#### Multiple rows
+```php
+print_r( Db::getResults( "SELECT * FROM `table`" ) );
+```
+#### Single row
+```php
+print_r( Db::getRow( "SELECT * FROM `table`" ) );
+```
 
 
