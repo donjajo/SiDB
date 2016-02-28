@@ -10,8 +10,8 @@ class Db {
 		self::$db_data = array(
 			'host' => 'localhost',
 			'user' => 'root',
-			'password' => 'elitshell',
-			'name' => 'test'
+			'password' => '',
+			'name' => ''
 			);
 
 		try {
