@@ -1,9 +1,11 @@
 <?php 
-class Db {
-	public static $num_rows = 0;
+class db {
+	public $connect;
+	public $prefix;
+	public $users;
+	public $verify_mail;
+	public $num_rows = 0;
 	private static $instance = null;
-	public static $connect;
-	protected static $db_data;
 
 	private function __construct() {
 		// Load database data
@@ -16,20 +18,23 @@ class Db {
 
 		try {
 			//Connecting to database
-			self::$connect = new \PDO ( 'mysql:host=' . self::$db_data[ 'host' ] . '; dbname=' . self::$db_data[ 'name' ], self::$db_data[ 'user' ] , self::$db_data[ 'password' ] );
+			$this->connect = new \PDO ( 'mysql:host=' . self::$db_data[ 'host' ] . '; dbname=' . self::$db_data[ 'name' ], self::$db_data[ 'user' ] , self::$db_data[ 'password' ] );
 
 			//Exception Error mode set
-			self::$connect->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+			$this->connect->setAttribute ( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 			
 		}
-		catch ( \PDOException $e ) {
-			$this->error_die ( $e->getMessage () );
+		catch ( PDOException $e ) {
+			$this->error_die( $e->getMessage() );
 		}
 	}
 
 	public static function getInstance() {
-		( !self::$instance ? self::$instance = new self() : false );
-		//return self::$instance;
+		$called = get_called_class();
+		if( empty( self::$instance[ $called ] ) ) {
+			self::$instance[ $called ] = new $called();
+		}
+		return self::$instance[ $called ];
 	}
 
 	/**
@@ -39,15 +44,14 @@ class Db {
 	 * @param string $data 
 	 * @return string column data if found, else returns false
 	 */
-	public static function checkRow( $table, $column, $data ) {
-		self::getInstance();
+	public function checkRow( $table, $column, $data ) {
 		try {
-			$q = self::$connect->prepare ( "SELECT `{$column}` FROM `{$table}` WHERE `{$column}` = :s" );
+			$q = $this->connect->prepare ( "SELECT `{$column}` FROM `{$table}` WHERE `{$column}` = :s LIMIT 1" );
 			$q->execute ( array (
 				':s' => $data 
 				));
 			if ( $q->rowCount () > 0 ) {
-				while( $row = $q->fetch( \PDO::FETCH_ASSOC ) ) {
+				while( $row = $q->fetch( PDO::FETCH_ASSOC ) ) {
 					return $row[ $column ]; break;
 				}
 			}
@@ -55,8 +59,8 @@ class Db {
 				return false;
 			}
 		}
-		catch( \PDOException $e ) {
-			self::error_die ( $e->getMessage () );
+		catch ( PDOException $e ) {
+			$this->error_die ( $e->getMessage () );
 		}
 	}
 
@@ -77,13 +81,9 @@ class Db {
 	 * 
 	 * @return integer Returns the last insert ID
 	 */
-	public static function insert( $table, array $array ) {
-		self::getInstance();
-		// Must be an array with data
-		if ( !is_array ( $array ) )
-			echo self::error_die ( 'Insert second argument must be array' ); 
-		elseif ( !$array )
-			echo self::error_die ( 'Nothing to insert :/' );
+	public function insert( $table, array $array ) {
+		if( !$array )
+			$this->error_die ( 'Nothing to insert :/' ); 
 
 		//Gather the columns and implode them separating with comma(,)
 		$columns = implode ( ', ', array_keys ( $array ) );
@@ -101,12 +101,12 @@ class Db {
 
 		//Data is ready, now insert it!
 		try {
-			$in = self::$connect->prepare( "INSERT INTO " . $table . " ( " . $columns . " ) VALUES ( " . $replace . " )" );
+			$in = $this->connect->prepare( "INSERT INTO " . $table . " ( " . $columns . " ) VALUES ( " . $replace . " )" );
 			$in->execute( $data );
-			return self::$connect->lastInsertId();
+			return $this->connect->lastInsertId();
 		}
-		catch ( \PDOException $e ) {
-			self::error_die ( $e->getMessage() );
+		catch ( PDOException $e ) {
+			$this->error_die ( $e->getMessage() );
 		}
 	}
 
@@ -118,18 +118,18 @@ class Db {
 	 * 
 	 * @return array
 	 */
-	private static function do_stuff( array $array, $statement = '{key} = {value}' ) {
+	private function do_stuff( array $array, $statement = '{key} = {value}' ) {
 
 		// Generate random placeholders to avoid conflict of existing
-		foreach ( $array as $key ) {
-			$r[] = ':' . substr ( sha1 ( $key ), 0, 5);
+		foreach( $array as $key ) {
+			$r[] = ':' . substr( sha1( $key ), 0, 5 );
 		}
 
 		// Combine generated placeholders with columns
-		$replace = array_combine ( array_keys ( $array ), $r );
+		$replace = array_combine( array_keys( $array ), $r );
 
 		// Combine generated placeholders with values
-		$joined_data = array_combine ( $r, array_values ( $array ) );
+		$joined_data = array_combine( $r, array_values( $array ) );
 
 		// Building the query to format needed in $statement
 		foreach ( $replace as $key => $value ) {
@@ -154,20 +154,19 @@ class Db {
 	 * 
 	 * @return bool
 	 */
-	public static function delete( $table, array $data = array(), $merge = ' AND ' ) {
-		self::getInstance();
+	public function delete( $table, array $data = array(), $merge = ' AND ' ) {
 		// Build query format
-		$code = self::do_stuff( $data, '{key} = {value}' );
+		$code = $this->do_stuff( $data, '{key} = {value}' );
 
 		//Delete data
 		try {
 			$sql = "DELETE FROM `{$table}` WHERE " . implode( ' ' . $merge . ' ', $code[0] );
-			$q = self::$connect->prepare( $sql );
+			$q = $this->connect->prepare( $sql );
 			$q->execute( $code[ 2 ] );
 			return true;
 		}
-		catch( \PDOException $e ) {
-			self::error_die( $e->getMessage() );
+		catch( PDOException $e ) {
+			$this->error_die( $e->getMessage() );
 		} 
 	}
 	
@@ -181,26 +180,25 @@ class Db {
 	 * 
 	 * @return bool
 	 */
-	public static function update( $table, array $data, array $where, $merge = 'AND' ) {
-		self::getInstance();
+	public function update( $table, array $data, array $where, $merge = 'AND' ) {
 		// No data supplied?
 		if ( !$data && !$where )
 			trigger_error( 'Nothing to update :/' );
 
 		// Build queries
-		$to_update = self::do_stuff ( $data, '{key} = {value}' );
-		$other_queries = self::do_stuff ( $where, '{key} = {value}' );
-		$sql = "UPDATE {$table} SET " . implode ( ', ', $to_update[0] ) . " WHERE " . implode ( ' ' . $merge . ' ', $other_queries [0] );
-		$total_value = array_merge ( $to_update [ 2 ], $other_queries [ 2 ] );
+		$to_update = $this->do_stuff( $data, '{key} = {value}' );
+		$other_queries = $this->do_stuff( $where, '{key} = {value}' );
+		$sql = "UPDATE {$table} SET " . implode( ', ', $to_update[ 0 ] ) . " WHERE " . implode ( ' ' . $merge . ' ', $other_queries[ 0 ] );
+		$total_value = array_merge ( $to_update[ 2 ], $other_queries[ 2 ] );
 		
 		// Update row(s)
 		try {
-			$q = self::$connect->prepare ( $sql );
-			$q->execute ( $total_value );
+			$q = $this->connect->prepare ( $sql );
+			$q->execute( $total_value );
 			return true;
 		}
-		catch ( \PDOException $e ) {
-			self::error_die ( $e->getMessage () );
+		catch ( PDOException $e ) {
+			$this->error_die ( $e->getMessage () );
 		}
 	}
 
@@ -212,26 +210,24 @@ class Db {
 	 * 
 	 * @return array
 	 */
-	public static function getResults( $sql, array $values = array() ) {
-		self::getInstance();
+	public function getResults( $sql, array $values = array() ) {
 		try {
-			// Pass $sql and $values directly the database
-			$q = self::$connect->prepare( $sql );
+			$q = $this->connect->prepare( $sql );
 			$q->execute( $values );
-			self::$num_rows = $q->rowCount();
+			$this->num_rows = $q->rowCount();
 
 			if( $q->rowCount() <= 0 ) {
 				return array();
 			}
 			else {
-				while( $row = $q->fetch( \PDO::FETCH_ASSOC ) ) {
+				while( $row = $q->fetch( PDO::FETCH_ASSOC ) ) {
 					$r[] = $row;
 				}
 				return $r;
 			}
 		}
-		catch( \PDOException $e ) {
-			self::error_die( $e->getMessage() );
+		catch( PDOException $e ) {
+			$this->error_die( $e->getMessage() );
 		}
 	}
 
@@ -243,24 +239,23 @@ class Db {
 	 * 
 	 * @return array
 	 */
-	public static function getRow( $sql, array $values = array() ) {
-		self::getInstance();
+	public function getRow( $sql, array $values = array() ) {
 		try {
-			$q = self::$connect->prepare( $sql );
+			$q = $this->connect->prepare( $sql );
 			$q->execute( $values );
-			self::$num_rows = $q->rowCount();
+			$this->num_rows = $q->rowCount();
 
-			if( $q->rowCount() <= 0 ) {
+			if( $this->num_rows <= 0 ) {
 				return array();
 			}
 			else {
-				while( $row = $q->fetch( \PDO::FETCH_ASSOC ) ) {
+				while( $row = $q->fetch( PDO::FETCH_ASSOC ) ) {
 					return $row; break;
 				}
 			}
 		}
-		catch( \PDOException $e ) {
-			self::error_die( $e->getMessage() );
+		catch( PDOException $e ) {
+			$this->error_die( $e->getMessage() );
 		}
 	}
 
@@ -271,14 +266,17 @@ class Db {
 	 * 
 	 * @return array
 	 */
-	public static function query( $sql ) {
-		self::getInstance();
+	public function query( $sql ) {
 		try {
-			$q = self::$connect->query( $sql );
-			return $q;
+			$q = $this->connect->query( $sql );
+			return ( $results ? $q : $this );
 		}
-		catch( \PDOException $e ) {
-			self::error_die( $e->getMessage() );
+		catch( PDOException $e ) {
+			$this->error_die( $e->getMessage() );
 		}
+	}
+
+	function __destruct() {
+		$this->connect = null;
 	}
 }
