@@ -14,17 +14,22 @@ self::$db_data = array(
 	'name' => ''
 	);
  ```
+ 
+ ### Initializing 
+```php
+ $db = db::getInstance();
+```
  ### Inserting Data
  Using the `insert()` method which accepts 2 arguments and returns the last insert ID
 - Table name
 - Arrays of values to insert with column name as keys
 ```php
-Db::insert( 'table', array( 'column1' => 'value1', 'column2' => 'value2' ) );
+$db->insert( 'table', array( 'column1' => 'value1', 'column2' => 'value2' ) );
 ```
 
 ### Updating Data
 ```php
-Db::update( 'table', array( 'column1' => 'new_value', 'column2' => 'new_value' ), array( 'column3' => 'value' ) );
+$db->update( 'table', array( 'column1' => 'new_value', 'column2' => 'new_value' ), array( 'column3' => 'value' ) );
 ```
 This accepts 3 arguments:
 - Table name
@@ -33,34 +38,34 @@ This accepts 3 arguments:
 
 ### Deleting Data
 ```php
-Db::delete( 'table', array( 'column' => 'value' ) );
+$db->delete( 'table', array( 'column' => 'value' ) );
 ```
 This deletes from table where `column` = `value`
 
 ### Getting data
 #### Multiple rows
 ```php
-print_r( Db::getResults( "SELECT * FROM `table`" ) );
+print_r( $db->getResults( "SELECT * FROM `table`" ) );
 ```
 #### Single row
 ```php
-print_r( Db::getRow( "SELECT * FROM `table`" ) );
+print_r( $db->getRow( "SELECT * FROM `table`" ) );
 ```
 
 ### Executing Query
 ```php 
-Db::query( "DROP DATABASE `test`" );
+$db->query( "DROP DATABASE `test`" );
 ```
 
 ### Others
 #### Number of Rows
 ```php
-Db::$num_rows;
+$db->$num_rows;
 ```
 This returns valid data after using the getResults and getRow method
 
 #### PDO Instance
 For some reasons you need the PDO instance use:
 ```php
-Db::$connect;
+$db->$connect;
 ```
